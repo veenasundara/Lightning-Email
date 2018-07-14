@@ -1,0 +1,278 @@
+<!-- Component: 	CmpSendEmail -->
+<!-- Created by: 	OpFocus(Veena Sundara-Heragu) on 7/3/18 -->
+<!-- Description: 	 -->
+<aura:component description="CmpSendEmail"
+                extends="c:CmpBase"
+                implements="c:IntBase,lightning:isUrlAddressable"
+                access="global"
+                controller="CmpSendEmailCtrl">
+
+    <aura:attribute name="lstFormat" type="List" default="[ {'label': 'Text', 'value': 'Text'},
+                                                            {'label': 'HTML', 'value': 'HTML'}]"/>
+    <aura:attribute name="format" type="String" default="Text"/>
+    <aura:attribute name="to" type="String"/>
+    <aura:attribute name="checkToValidity" type="Boolean" access="private" default="false"/>
+
+    <aura:attribute name="lstRelatedTo" type="Object[]" />
+    <aura:attribute name="relatedTo" type="String"/>
+    <aura:attribute name="relatedToRecord" type="String"/>
+    <aura:attribute name="relatedToRecordError" type="Boolean" default="false"/>
+
+    <aura:attribute name="lstFrom" type="Object[]" />
+    <aura:attribute name="fromId" type="String"/>
+
+    <aura:attribute name="lstContact" type="Object[]" />
+    <aura:attribute name="mapEmailByContact" type="Object"/>
+
+    <aura:attribute name="additionalTo" type="String"/>
+    <aura:attribute name="lstSelectedAdditionalTo" type="List" default="[]"/>
+
+    <aura:attribute name="cc" type="String"/>
+    <aura:attribute name="lstSelectedCC" type="List" default="[]"/>
+
+    <aura:attribute name="bcc" type="String"/>
+    <aura:attribute name="lstSelectedBCC" type="List" default="[]"/>
+
+    <aura:attribute name="whichList" type="String" description="AdditionalTo, CC or BCC"/>
+    <aura:attribute name="lstSelectedToShow" type="List"/>
+
+    <aura:attribute name="subject" type="String"/>
+    <aura:attribute name="body" type="String"/>
+
+    <aura:attribute name="lstFolder" type="List"/>
+    <aura:attribute name="mapTemplatesByFolder" type="Object"/>
+    <aura:attribute name="lstTemplate" type="List"/>
+    <aura:attribute name="template" type="Object"/>
+    <aura:attribute name="templateFolder" type="String"/>
+
+    <aura:attribute name="lstAttachFiles" type="List"/>
+    <aura:attribute name="lstContactTempFiles" type="List"/>
+
+    <!-- method called after CmpBase completes its init -->
+    <aura:method name="init" action="{!c.init}">
+    </aura:method>
+
+    <lightning:card title="Send Email">
+        <aura:set attribute="actions">
+            <lightning:button label="Send" variant="brand" onclick="{!c.send}"/>
+            <lightning:button label="Cancel" onclick="{!c.cancel}"/>
+        </aura:set>
+
+        <lightning:layout multipleRows="true" class="slds-p-top_large">
+
+            <!-- Template -->
+            <lightning:layoutItem size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="4" padding="around-small">
+                <div class="slds-form-element">
+                    <label class="slds-form-element__label">
+                        Select Template
+                        <lightning:buttonIcon iconName="utility:search" variant="bare" onclick="{! c.selectTemplate }" alternativeText="Search" />
+                    </label>
+                    <div class="slds-form-element__control">
+                        <aura:if isTrue="{!v.template.Id}">
+                            <ui:outputText value="{!v.templateFolder}"/>/<ui:outputText value="{!v.template.Name}"/><br/>
+                            <ui:outputText value="{!'(' + v.template.TemplateType + ' template)'}"/>
+                        </aura:if>
+                    </div>
+                </div>
+            </lightning:layoutItem>
+
+
+            <!-- Format -->
+            <lightning:layoutItem size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="4" padding="around-small">
+                <lightning:radioGroup aura:id="format"
+                                      name="formatGroup"
+                                      label="Email Format"
+                                      options="{! v.lstFormat }"
+                                      value="{! v.format }"
+                                      type="radio"
+                                      disabled="{!v.template.Id}"/>
+            </lightning:layoutItem>
+
+            <!-- From -->
+            <lightning:layoutItem size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="4" padding="around-small">
+                <lightning:select aura:id="from" name="from" label="From" required="true" value="{!v.fromId}">
+                    <aura:iteration items="{!v.lstFrom}" var="option">
+                        <option text="{!option.label}" value="{!option.value}" selected="{!option.value == v.fromId}"/>
+                    </aura:iteration>
+                </lightning:select>
+            </lightning:layoutItem>
+
+            <!-- To -->
+            <lightning:layoutItem size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="4" padding="around-small">
+                <c:CmpLookup sObjectName="Contact"
+                               displayedFieldName="Name"
+                               valueFieldName="Id"
+                               label="To"
+                               checkValidity="{!v.checkToValidity}"
+                               selectedValue="{!v.to}"
+                               required="true"/>
+            </lightning:layoutItem>
+
+            <!-- Related To -->
+            <lightning:layoutItem size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="4" padding="around-small">
+                    <lightning:select aura:id="relatedTo" name="relatedTo" label="Related To" value="{!v.relatedTo}">
+                        <option text="--Select--" value="--Select--"/>
+                        <aura:iteration items="{!v.lstRelatedTo}" var="option">
+                            <option text="{!option.label}" value="{!option.value}" selected="{!option.value == v.relatedTo}"/>
+                        </aura:iteration>
+                    </lightning:select>
+
+                    <c:CmpLookup sObjectName="{!v.relatedTo &amp;&amp; v.relatedTo != '--Select--' ? v.relatedTo : ''}"
+                                   displayedFieldName="Name"
+                                   valueFieldName="Id"
+                                   label="{!v.relatedTo &amp;&amp; v.relatedTo != '--Select--' ? 'Select ' + v.relatedTo : ''}"
+                                   selectedValue="{!v.relatedToRecord}"
+                                   class="{!v.relatedToRecordError ? 'slds-has-error' : ''}"/>
+
+                    <div class="{!v.relatedToRecordError ? 'slds-has-error' : 'slds-has-error slds-hide'}">
+                        Complete this field
+                    </div>
+            </lightning:layoutItem>
+
+            <!-- Additional To -->
+            <lightning:layoutItem size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="4" padding="around-small">
+
+                <div class="slds-form-element">
+                    <label class="slds-form-element__label">
+                        Additional To
+                        <lightning:buttonIcon iconName="utility:search" variant="bare" onclick="{! c.selectAdditonalTo }" alternativeText="Search" />
+                    </label>
+                    <div class="slds-form-element__control">
+                        <lightning:textarea name="additionalTo" value="{!v.additionalTo}" variant="label-hidden"
+                                            label="Additional To" maxlength="500"/>
+                    </div>
+                </div>
+            </lightning:layoutItem>
+
+            <!-- CC -->
+            <lightning:layoutItem size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="4" padding="around-small">
+                <div class="slds-form-element">
+                    <label class="slds-form-element__label">
+                        CC
+                        <lightning:buttonIcon iconName="utility:search" variant="bare" onclick="{! c.selectCC }" alternativeText="Search" />
+                    </label>
+                    <div class="slds-form-element__control">
+                        <lightning:textarea name="cc" value="{!v.cc}" label="CC" variant="label-hidden" maxlength="500" />
+                    </div>
+                </div>
+            </lightning:layoutItem>
+
+            <!-- BCC -->
+            <lightning:layoutItem size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="4" padding="around-small">
+                <div class="slds-form-element">
+                    <label class="slds-form-element__label">
+                        BCC
+                        <lightning:buttonIcon iconName="utility:search" variant="bare" onclick="{! c.selectBCC }" alternativeText="Search" />
+                    </label>
+                    <div class="slds-form-element__control">
+                        <lightning:textarea name="bcc" value="{!v.bcc}" label="BCC" variant="label-hidden" maxlength="500" />
+                    </div>
+                </div>
+            </lightning:layoutItem>
+
+            <!-- Use Signature -->
+            <lightning:layoutItem size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="4" padding="around-small">
+                <lightning:input aura:id="useSignature" type="toggle" label="Use Salesforce Signature?" name="useSignature" checked="false" messageToggleActive="Yes" messageToggleInactive="No"/>
+            </lightning:layoutItem>
+
+            <!-- Subject -->
+            <lightning:layoutItem size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="4" padding="around-small">
+                <lightning:input label="Subject" name="subject" value="{!v.subject}" disabled="{!v.template}"/>
+            </lightning:layoutItem>
+
+            <!-- Body -->
+            <lightning:layoutItem size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="4" padding="around-small">
+                <aura:if isTrue="{!v.format == 'Text' || v.template.TemplateType == 'text'}">
+                    <ui:inputTextArea value="{!v.body}" rows="10" label="Body" maxlength="2000" disabled="{!v.template}" />
+
+                    <aura:set attribute="else">
+                        <lightning:inputRichText value="{!v.body}" label="Body" disabled="{!v.template}"/>
+                    </aura:set>
+                </aura:if>
+            </lightning:layoutItem>
+
+            <!-- Attachments -->
+            <lightning:layoutItem size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="4" padding="around-small">
+                <aura:if isTrue="{!v.to}">
+                    <lightning:fileUpload label="Attach File(s)"
+                                          name="fileUploader"
+                                          multiple="true"
+                                          recordId="{!v.to}"
+                                          onuploadfinished="{!c.handleUploadFinished}" >
+                    </lightning:fileUpload>
+                </aura:if>
+                <aura:if isTrue="{!v.lstAttachFiles.length > 0}">
+                    <div class="slds-p-top_medium">
+                        Attachments
+                        <table class="slds-table slds-table--bordered">
+                            <aura:iteration var="file" items="{!v.lstAttachFiles}">
+                                <tr>
+                                    <td>{!file.name}</td>
+                                    <td><lightning:buttonIcon iconName="utility:delete" variant="bare" onclick="{! c.deleteFile }"
+                                                              alternativeText="delete" name="{!file.documentId}"/>
+                                    </td>
+                                </tr>
+                            </aura:iteration>
+                        </table>
+                    </div>
+                </aura:if>
+            </lightning:layoutItem>
+
+        </lightning:layout>
+    </lightning:card>
+
+
+
+    <!-- Modal to select Additional To, CC and BCC -->
+    <c:CmpModal aura:id="contactModal" title="Select Contacts" allowClose="true">
+
+        <aura:set attribute="footer">
+            <div class="slds-clearfix">
+                <div class="slds-float--right">
+                    <lightning:button label="Cancel" onclick="{!c.cancelContact}"/>
+                    <lightning:button label="Save" variant="brand" onclick="{!c.saveContact}"/>
+                </div>
+            </div>
+        </aura:set>
+
+        <lightning:dualListbox aura:id="selectOptions" name="Select Options"  label= "Select Options" variant="label-hidden"
+                               sourceLabel="Available Contacts"
+                               selectedLabel="Selected Contacts"
+                               options="{! v.lstContact }"
+                               value="{! v.lstSelectedToShow }"
+                               onchange="{! c.handleChange }"/>
+
+
+    </c:CmpModal>
+
+
+    <!-- Modal to select Email Template -->
+    <c:CmpModal aura:id="templateModal" title="Select Email Template" allowClose="true">
+
+        <aura:set attribute="footer">
+            <div class="slds-clearfix">
+                <div class="slds-float--right">
+                    <lightning:button label="Cancel" onclick="{!c.cancelTemplate}"/>
+                    <lightning:button label="Save" variant="brand" onclick="{!c.saveTemplate}"/>
+                </div>
+            </div>
+        </aura:set>
+
+        <lightning:select aura:id="folder" name="folder" label="Folder" onchange="{!c.folderChanged}">
+            <option text="--Select--" value="--Select--"/>
+            <aura:iteration items="{!v.lstFolder}" var="option">
+                <option text="{!option}" value="{!option}" selected="{!option == v.templateFolder}"/>
+            </aura:iteration>
+        </lightning:select>
+
+        <lightning:select aura:id="template" name="template" label="Email Template">
+            <option text="--Select--" value="--Select--"/>
+            <aura:iteration items="{!v.lstTemplate}" var="option">
+                <option text="{!option.Name}" value="{!option.Id}" selected="{!option.Id == v.template.Id}"/>
+            </aura:iteration>
+        </lightning:select>
+
+    </c:CmpModal>
+
+
+</aura:component>
