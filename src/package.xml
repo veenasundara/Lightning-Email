@@ -3,6 +3,7 @@
     <types>
         <members>CmpSendEmailCtrl</members>
         <members>CmpSendEmailCtrlTest</members>
+        <members>EmailAttachment</members>
         <name>ApexClass</name>
     </types>
     <types>
