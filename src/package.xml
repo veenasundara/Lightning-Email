@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
+        <members>CmpLookupCtrl</members>
+        <members>CmpLookupCtrlTest</members>
         <members>CmpSendEmailCtrl</members>
         <members>CmpSendEmailCtrlTest</members>
         <members>EmailAttachment</members>
         <name>ApexClass</name>
     </types>
     <types>
+        <members>CmpLookup</members>
+        <members>CmpPills</members>
+        <members>EvtCmpLookupChanged</members>
+        <members>EvtCmpLookupCleared</members>
+        <members>EvtCmpLookupInitDone</members>
         <members>CmpSendEmail</members>
         <name>AuraDefinitionBundle</name>
     </types>
