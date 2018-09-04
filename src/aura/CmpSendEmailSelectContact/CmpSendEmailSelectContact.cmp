@@ -1,0 +1,87 @@
+<!-- Component: 	CmpSendEmailSelectContact -->
+<!-- Created by: 	OpFocus(Veena Sundara-Heragu) on 8/30/18 -->
+<!-- Description: 	 -->
+<aura:component description="CmpSendEmailSelectContact" controller="CmpSendEmailSelectContactCtrl">
+
+    <aura:attribute name="title" type="String" />
+    <aura:attribute name="lstSelectedToShow" type="List"/>
+    <aura:attribute name="mapEmailByContact" type="Object" />
+
+
+    <aura:attribute name="searchString" type="String" access="private"/>
+    <aura:attribute name="page" type="Integer" default="1" access="private"/>
+
+    <aura:attribute name="lstContact" type="Object[]" access="private"/>
+
+    <aura:attribute name="noMore" type="Boolean" default="false" access="private"/>
+
+    <aura:attribute name="modalClassName" type="String" default="slds-modal" access="private"/>
+    <aura:attribute name="backdropClassName" type="String" default="slds-backdrop" access="private"/>
+
+
+    <aura:registerEvent name="EvtCmpSendEmailContactsSelected" type="c:EvtCmpSendEmailContactsSelected"/>
+
+    <aura:method name="open" action="{!c.doInit}">
+    </aura:method>
+
+    <div class="{!v.modalClassName + ' ' + v.class}" aria-hidden="false" role="dialog">
+        <div class="slds-modal__container">
+
+            <!-- HEADER -->
+            <aura:if isTrue="{!v.title}">
+
+                <div class="{! v.title != ''? 'slds-modal__header' : 'slds-modal__header slds-modal__header--empty'}">
+
+                    <lightning:buttonIcon iconName="utility:close" alternativeText="Close" variant="bare-inverse"
+                                          onclick="{!c.closeModal}" class="slds-modal__close" size="large"/>
+
+                    <aura:if isTrue="{!v.title != ''}" >
+                        <h2 class="slds-text-heading--medium">{!v.title}</h2>
+                    </aura:if>
+                </div>
+
+            </aura:if>
+
+            <!-- BODY -->
+            <div class="slds-modal__content slds-p-around_small" style="overflow: visible;">
+
+                <lightning:spinner aura:id="mySpinner" variant="brand" size="large" class="slds-hide"
+                                   alternativeText="waiting"/>
+
+
+                <lightning:input type="search" label="Search" name="search" value="{!v.searchString}" onchange="{!c.search}"/>
+                <br/>
+                <lightning:dualListbox aura:id="selectOptions" name="Select Options"  label= "Select Options" variant="label-hidden"
+                                       sourceLabel="Available Contacts"
+                                       selectedLabel="Selected Contacts"
+                                       options="{! v.lstContact }"
+                                       value="{! v.lstSelectedToShow }"/>
+
+                <aura:if isTrue="{!v.lstContact}"><span class="retrieve">Retrieved {!v.lstContact.length}</span> </aura:if>
+                <lightning:buttonIcon iconName="utility:arrowdown" onclick="{! c.more }" alternativeText="Fetch More"
+                            disabled="{!v.noMore}" class="fetchMore"/>
+
+
+
+            </div>
+
+            <!-- FOOTER -->
+            <div class="slds-modal__footer" style="text-align: left;">
+                <div class="slds-clearfix">
+                    <div class="slds-float--right">
+                        <lightning:button label="Cancel" onclick="{!c.closeModal}"/>
+                        <lightning:button label="Save" variant="brand" onclick="{!c.save}"/>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="{!v.backdropClassName}"></div>
+
+
+
+
+
+
+</aura:component>

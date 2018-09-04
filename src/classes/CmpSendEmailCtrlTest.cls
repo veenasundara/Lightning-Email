@@ -11,7 +11,7 @@ public class CmpSendEmailCtrlTest
     {
         Account a = new Account(Name = 'Test Account');
         insert a;
-        Contact c = new Contact(FirstName = 'Test', LastName='Contact', AccountId = a.Id);
+        Contact c = new Contact(FirstName = 'Test', LastName='Contact', AccountId = a.Id, Email='test@yahoo.com');
         insert c;
 
         EmailTemplate temp = new EmailTemplate();
@@ -25,13 +25,11 @@ public class CmpSendEmailCtrlTest
             insert temp;
         }
 
-        CmpSendEmailCtrl.CmpSendEmailReturn retVal = CmpSendEmailCtrl.ctrlGetLists('{}');
-        system.assertEquals(1,retVal.lstContact.size());
-        system.assertEquals(c.Id, retVal.lstContact[0].value);
+        CmpSendEmailCtrl.CmpSendEmailReturn retVal = CmpSendEmailCtrl.ctrlGetLists();
         system.assert(retVal.lstRelatedTo.size() > 1);
 
 
-        CmpSendEmailCtrl.CmpTemplateReturn ret = CmpSendEmailCtrl.ctrlGetEmailTemplate('{}', temp.Id);
+        CmpSendEmailCtrl.CmpTemplateReturn ret = CmpSendEmailCtrl.ctrlGetEmailTemplate(temp.Id);
         system.assertEquals('My Personl Email Templates', ret.folder);
 
         ContentVersion cv = new ContentVersion( Title = 'Test',
@@ -40,16 +38,16 @@ public class CmpSendEmailCtrlTest
                                                 IsMajorVersion = true);
         insert cv;
         cv = [Select Id, ContentDocumentId From ContentVersion Where Id = :cv.Id];
-        CmpSendEmailCtrl.ctrlDeleteDocument('{}', new List<String>{cv.ContentDocumentId});
+        CmpSendEmailCtrl.ctrlDeleteDocument(new List<String>{cv.ContentDocumentId});
         List<ContentVersion> lstCV = [Select Id from ContentVersion where Id = :cv.Id];
         system.assertEquals(0, lstCV.size());
 
-        CmpSendEmailCtrl.ctrlSendEmail('{}', temp.Id, 'text', UserInfo.getUserId(), c.Id, 'Account', a.Id,
+        CmpSendEmailCtrl.ctrlSendEmail(temp.Id, 'text', UserInfo.getUserId(), c.Id, 'Account', a.Id,
                                         'test@yahoo.com', 'test@yahoo.com', 'test@yahoo.com', false,
                                         'subject', 'body',
                                         JSON.serialize(new List<EmailAttachment>{new EmailAttachment('testdoc', cv.ContentDocumentId)}));
 
-        CmpSendEmailCtrl.ctrlSendEmail('{}', null, 'text', UserInfo.getUserId(), c.Id, 'Account', a.Id,
+        CmpSendEmailCtrl.ctrlSendEmail(null, 'text', UserInfo.getUserId(), c.Id, 'Account', a.Id,
                                         'test@yahoo.com', 'test@yahoo.com', 'test@yahoo.com', false,
                                         'subject', 'body',
                                         JSON.serialize(new List<EmailAttachment>{new EmailAttachment('testdoc', cv.ContentDocumentId)}));

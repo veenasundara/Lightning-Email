@@ -7,24 +7,16 @@
     selectAdditonalTo: function (component, event, helper)
     {
         helper.hlpSelectAdditionalTo(component);
-        component.find('contactModal').openModal();
     },
 
     selectCC: function (component, event, helper)
     {
         helper.hlpSelectCC(component);
-        component.find('contactModal').openModal();
     },
 
     selectBCC: function (component, event, helper)
     {
         helper.hlpSelectBCC(component);
-        component.find('contactModal').openModal();
-    },
-
-    cancelContact: function (component, event, helper)
-    {
-        component.find('contactModal').closeModal();
     },
 
     saveContact: function (component, event, helper)

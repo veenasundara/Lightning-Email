@@ -3,21 +3,18 @@
     {
         try
         {
-            component.showSpinner();
+            this.showSpinner(component);
             var action = component.get('c.ctrlGetLists');
-            action.setParams({
-                                 'deviceInfoStr': JSON.stringify(component.get('v.deviceinfo'))
-                             });
 
-            action.setCallback(this, function (result)
+            action.setCallback(this, function (response)
             {
-                if (!component.successfulResponse(result))
+                if (!this.handleResponse(component, response))
                 {
-                    component.hideSpinner();
+                    this.hideSpinner(component);
                     return;
                 }
 
-                var resp = result.getReturnValue();
+                var resp = response.getReturnValue();
                 //console.log('resp = ' + JSON.stringify(resp));
                 component.set("v.lstRelatedTo", resp.lstRelatedTo);
                 component.set("v.lstFrom", resp.lstFrom);
@@ -28,14 +25,13 @@
                 component.set("v.mapTemplatesByFolder", resp.mapTemplatesByFolder);
                 this.hlpProcessParameters(component);
 
-                component.hideSpinner();
             });
 
             $A.enqueueAction(action);
         }
         catch (e)
         {
-            component.error('hlpMethod - ' + e.message);
+            this.showError(component,'hlpDoInit - ' + e.message);
         }
     },
 
@@ -95,10 +91,11 @@
                         break;
                 }
             }
+            this.hideSpinner(component);
         }
         catch (e)
         {
-            component.error('hlpSelectAdditionalTo - ' + e.message);
+            this.showError(component,'hlpSelectAdditionalTo - ' + e.message);
         }
     },
 
@@ -109,11 +106,11 @@
             var lstSelectedAdditionalTo = component.get("v.lstSelectedAdditionalTo");
             component.set("v.lstSelectedToShow", lstSelectedAdditionalTo);
             component.set("v.whichList", 'AdditionalTo');
-            component.find("contactModal").openModal();
+            component.find("selectContactModal").open();
         }
         catch (e)
         {
-            component.error('hlpSelectAdditionalTo - ' + e.message);
+            this.showError(component,'hlpSelectAdditionalTo - ' + e.message);
         }
     },
 
@@ -124,11 +121,11 @@
             var lstSelectedCC = component.get("v.lstSelectedCC");
             component.set("v.lstSelectedToShow", lstSelectedCC);
             component.set("v.whichList", 'CC');
-            component.find("contactModal").openModal();
+            component.find("selectContactModal").open();
         }
         catch (e)
         {
-            component.error('hlpSelectAdditionalTo - ' + e.message);
+            this.showError(component,'hlpSelectAdditionalTo - ' + e.message);
         }
     },
 
@@ -139,11 +136,11 @@
             var lstSelectedBCC = component.get("v.lstSelectedBCC");
             component.set("v.lstSelectedToShow", lstSelectedBCC);
             component.set("v.whichList", 'BCC');
-            component.find("contactModal").openModal();
+            component.find("selectContactModal").open();
         }
         catch (e)
         {
-            component.error('hlpSelectAdditionalTo - ' + e.message);
+            this.showError(component,'hlpSelectAdditionalTo - ' + e.message);
         }
     },
 
@@ -151,7 +148,7 @@
     {
         try
         {
-            component.showSpinner();
+            this.showSpinner(component);
             var whichList = component.get("v.whichList");
             switch(whichList)
             {
@@ -197,12 +194,12 @@
 
             }
 
-            component.find("contactModal").closeModal();
-            component.hideSpinner();
+            //component.find("contactModal").closeModal();
+            this.hideSpinner(component);
         }
         catch (e)
         {
-            component.error('hlpSave - ' + e.message);
+            this.showError(component,'hlpSave - ' + e.message);
         }
     },
 
@@ -228,7 +225,6 @@
                 }
 
                 var splits = textValue.split(';');
-                console.log('splits = ' + JSON.stringify(splits));
                 textValue = '';
                 for(var i=0; i < splits.length; i++)
                 {
@@ -236,9 +232,7 @@
                     {
                         textValue += textValue == '' ? splits[i] : ';' + splits[i];
                     }
-                    console.log('textValue = ' + textValue);
                 }
-                console.log('textValue = ' + textValue);
             }
 
             // now, get the new selection
@@ -261,7 +255,7 @@
         }
         catch (e)
         {
-            component.error('hlpUpdateSelection - ' + e.message);
+            this.showError(component,'hlpUpdateSelection - ' + e.message);
         }
     },
 
@@ -276,7 +270,7 @@
         }
         catch (e)
         {
-            component.error('hlpFolderChanged - ' + e.message);
+            this.showError(component,'hlpFolderChanged - ' + e.message);
         }
     },
 
@@ -307,7 +301,7 @@
         }
         catch (e)
         {
-            component.error('hlpFolderChanged - ' + e.message);
+            this.showError(component,'hlpFolderChanged - ' + e.message);
         }
     },
 
@@ -315,24 +309,23 @@
     {
         try
         {
-            component.showSpinner();
+            this.showSpinner(component);
 
             // now, get the body and subject for the template
             var action = component.get('c.ctrlGetEmailTemplate');
             action.setParams({
-                                 'deviceInfoStr': JSON.stringify(component.get('v.deviceinfo')),
                                  'templateId' : templateId
                              });
 
-            action.setCallback(this, function (result)
+            action.setCallback(this, function (response)
             {
-                if (!component.successfulResponse(result))
+                if (!this.handleResponse(component, response))
                 {
-                    component.hideSpinner();
+                    this.hideSpinner(component);
                     return;
                 }
 
-                var resp = result.getReturnValue();
+                var resp = response.getReturnValue();
                 //console.log('resp = ' + JSON.stringify(resp));
                 component.set("v.subject", resp.et.Subject);
                 component.set("v.template", resp.et);
@@ -350,14 +343,14 @@
                 {
                     component.set("v.body", resp.et.HtmlValue);
                 }
-                component.hideSpinner();
+                this.hideSpinner(component);
             });
 
             $A.enqueueAction(action);
         }
         catch (e)
         {
-            component.error('hlpGetTemplate - ' + e.message);
+            this.showError(component,'hlpGetTemplate - ' + e.message);
         }
     },
 
@@ -392,7 +385,7 @@
         }
         catch (e)
         {
-            component.error('hlpUploadFinished - ' + e.message);
+            this.showError(component,'hlpUploadFinished - ' + e.message);
         }
     },
 
@@ -423,7 +416,7 @@
             }
             component.set("v.lstContactTempFiles", newContactTempFiles);
 
-            component.showSpinner();
+            this.showSpinner(component);
             // now, delete the Document record
             var lstDocumentId = [];
             lstDocumentId.push(documentId);
@@ -432,7 +425,7 @@
         }
         catch (e)
         {
-            component.error('hlpDeleteFile - ' + e.message);
+            this.showError(component,'hlpDeleteFile - ' + e.message);
         }
     },
 
@@ -442,27 +435,26 @@
         {
             var action = component.get('c.ctrlDeleteDocument');
             action.setParams({
-                                 'deviceInfoStr': JSON.stringify(component.get('v.deviceinfo')),
                                  'lstDocumentId' : lstDocumentId
                              });
 
-            action.setCallback(this, function (result)
+            action.setCallback(this, function (response)
             {
-                if (!component.successfulResponse(result))
+                if (!this.handleResponse(component, response))
                 {
-                    component.hideSpinner();
+                    this.hideSpinner(component);
                     return;
                 }
 
-                var resp = result.getReturnValue();
-                component.hideSpinner();
+                var resp = response.getReturnValue();
+                this.hideSpinner(component);
             });
 
             $A.enqueueAction(action);
         }
         catch (e)
         {
-            component.error('hlpDeleteFile - ' + e.message);
+            this.showError(component,'hlpDeleteFile - ' + e.message);
         }
     },
 
@@ -479,7 +471,7 @@
             }
             else // delete attachments if they exist
             {
-                component.showSpinner();
+                this.showSpinner(component);
                 // now, delete the Document record
                 var lstDocumentId = [];
                 for(var i = 0; i < lstContactTempFiles.length; i++)
@@ -493,7 +485,7 @@
         }
         catch (e)
         {
-            component.error('hlpCancel - ' + e.message);
+            this.showError(component,'hlpCancel - ' + e.message);
         }
     },
 
@@ -503,10 +495,10 @@
         {
             if(!this.validate(component))
             {
-                component.error('Please correct errors');
+                this.showError(component,'Please correct errors');
                 return;
             }
-            component.showSpinner();
+            this.showSpinner(component);
 
             var templateId;
             var template = component.get("v.template");
@@ -532,7 +524,6 @@
 
             var action = component.get('c.ctrlSendEmail');
             action.setParams({
-                                 'deviceInfoStr': JSON.stringify(component.get('v.deviceinfo')),
                                  'templateId' : templateId,
                                  'format' : format,
                                  'fromId' : fromId,
@@ -548,16 +539,17 @@
                                  'lstUploadFileStr' : JSON.stringify(lstAttachFiles),
                              });
 
-            action.setCallback(this, function (result)
+            action.setCallback(this, function (response)
             {
-                if (!component.successfulResponse(result))
+                if (!this.handleResponse(component, response))
                 {
-                    component.hideSpinner();
+                    this.hideSpinner(component);
                     return;
                 }
 
-                var resp = result.getReturnValue();
-                component.hideSpinner();
+                var resp = response.getReturnValue();
+                this.showSuccess(component, 'Email Sent Successfully');
+                this.hideSpinner(component);
                 this.hlpCancel(component);
             });
 
@@ -565,7 +557,7 @@
         }
         catch (e)
         {
-            component.error('hlpSend - ' + e.message);
+            this.showError(component,'hlpSend - ' + e.message);
         }
     },
 
@@ -593,5 +585,71 @@
 
         return valid;
     },
-    
+
+    handleResponse : function(component, response) {
+        try
+        {
+            var state = response.getState();
+            if (state !== "SUCCESS")
+            {
+                this.hideSpinner(component);
+                var unknownError = true;
+                if(state === 'ERROR')
+                {
+                    var errors = response.getError();
+                    if (errors)
+                    {
+                        if (errors[0] && errors[0].message)
+                        {
+                            unknownError = false;
+                            this.showError(component, 'handleResponse - ' + errors[0].message);
+                        }
+                    }
+                }
+                if(unknownError)
+                {
+                    this.showError(component, 'Unknown error from Apex class');
+                }
+                return false;
+            }
+            return true;
+        }
+        catch(e)
+        {
+            this.showError(component, e.message);
+            return false;
+        }
+    },
+
+    showError : function(component, message)
+    {
+        var toastEvent = $A.get("e.force:showToast");
+        toastEvent.setParams({
+                                 "type": "Error",
+                                 //"mode": "sticky",
+                                 "message": message
+                             });
+        toastEvent.fire();
+    },
+
+    showSuccess : function(component, message)
+    {
+        var toastEvent = $A.get("e.force:showToast");
+        toastEvent.setParams({
+                                 "type": "success",
+                                 //"mode": "sticky",
+                                 "message": message
+                             });
+        toastEvent.fire();
+    },
+
+    showSpinner : function(component) {
+        var spinner = component.find("mySpinner");
+        $A.util.removeClass(spinner, "slds-hide");
+    },
+
+    hideSpinner : function(component) {
+        var spinner = component.find("mySpinner");
+        $A.util.addClass(spinner, "slds-hide");
+    },
 })

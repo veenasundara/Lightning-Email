@@ -52,11 +52,16 @@
     <aura:method name="init" action="{!c.init}">
     </aura:method>
 
+    <aura:handler name="EvtCmpSendEmailContactsSelected" event="c:EvtCmpSendEmailContactsSelected" action="{!c.saveContact}"/>
+
     <lightning:card title="Send Email">
         <aura:set attribute="actions">
             <lightning:button label="Send" variant="brand" onclick="{!c.send}"/>
             <lightning:button label="Cancel" onclick="{!c.cancel}"/>
         </aura:set>
+
+        <lightning:spinner aura:id="mySpinner" variant="brand" size="large" class="slds-hide"
+                           alternativeText="waiting"/>
 
         <lightning:layout multipleRows="true" class="slds-p-top_large">
 
@@ -222,28 +227,11 @@
     </lightning:card>
 
 
-
-    <!-- Modal to select Additional To, CC and BCC -->
-    <c:CmpModal aura:id="contactModal" title="Select Contacts" allowClose="true">
-
-        <aura:set attribute="footer">
-            <div class="slds-clearfix">
-                <div class="slds-float--right">
-                    <lightning:button label="Cancel" onclick="{!c.cancelContact}"/>
-                    <lightning:button label="Save" variant="brand" onclick="{!c.saveContact}"/>
-                </div>
-            </div>
-        </aura:set>
-
-        <lightning:dualListbox aura:id="selectOptions" name="Select Options"  label= "Select Options" variant="label-hidden"
-                               sourceLabel="Available Contacts"
-                               selectedLabel="Selected Contacts"
-                               options="{! v.lstContact }"
-                               value="{! v.lstSelectedToShow }"
-                               onchange="{! c.handleChange }"/>
-
-
-    </c:CmpModal>
+    <c:CmpSendEmailSelectContact aura:id="selectContactModal"
+                                 title="Select Contact"
+                                 lstSelectedToShow="{!v.lstSelectedToShow}"
+                                 mapEmailByContact="{!v.mapEmailByContact}">
+    </c:CmpSendEmailSelectContact>
 
 
     <!-- Modal to select Email Template -->

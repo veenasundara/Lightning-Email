@@ -5,18 +5,11 @@
 public with sharing class CmpSendEmailCtrl
 {
     @AuraEnabled
-    public static CmpSendEmailReturn ctrlGetLists(String deviceInfoStr)
+    public static CmpSendEmailReturn ctrlGetLists()
     {
         CmpSendEmailReturn retVal = new CmpSendEmailReturn();
         try
         {
-            retVal.lstContact = new List<ListOption>();
-            retVal.mapEmailByContact = new Map<Id, String>();
-            for(Contact c : [Select Id, Name, Email from Contact Order By Name])
-            {
-                retVal.lstContact.add(new ListOption(c.Name, c.Id));
-                retVal.mapEmailByContact.put(c.Id, c.Email);
-            }
 
             // Add current user's name and email address followed by all the organization wide email addresses as options for the
             // "From" selection
@@ -127,39 +120,23 @@ public with sharing class CmpSendEmailCtrl
 
             return retVal;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            retVal.handleException(e);
-            Log.notify(e, null, 'CmpSendEmailCtrl', DeviceInformation.deserialize(deviceInfoStr), Log.ErrorType.ERROR);
+            throw new AuraHandledException('Exception occured:\r\n' + ex.getMessage() + '\r\n' + ex.getStackTraceString() + '\r\n');
         }
-        return retVal;
     }
 
-    public class CmpSendEmailReturn extends AuraReturn
+    public class CmpSendEmailReturn
     {
         @AuraEnabled public List<ListOption> lstFrom;
         @AuraEnabled public List<ListOption> lstRelatedTo;
-        @AuraEnabled public List<ListOption> lstContact;
-        @AuraEnabled public Map<Id, String> mapEmailByContact;
         @AuraEnabled public List<String> lstFolder;
         @AuraEnabled public Map<String, List<EmailTemplate>> mapTemplatesByFolder;
     }
 
-    public Class ListOption
-    {
-        @AuraEnabled public String label;
-        @AuraEnabled public String value;
-
-        public ListOption(String label, String value)
-        {
-            this.label = label;
-            this.value = value;
-        }
-    }
-
 
     @AuraEnabled
-    public static CmpTemplateReturn ctrlGetEmailTemplate(String deviceInfoStr, String templateId)
+    public static CmpTemplateReturn ctrlGetEmailTemplate(String templateId)
     {
         CmpTemplateReturn retVal = new CmpTemplateReturn();
         try
@@ -182,24 +159,21 @@ public with sharing class CmpSendEmailCtrl
 
             return retVal;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            retVal.handleException(e);
-            Log.notify(e, null, 'CmpSendEmailCtrl', DeviceInformation.deserialize(deviceInfoStr), Log.ErrorType.ERROR);
+            throw new AuraHandledException('Exception occured:\r\n' + ex.getMessage() + '\r\n' + ex.getStackTraceString() + '\r\n');
         }
-        return retVal;
     }
 
-    public class CmpTemplateReturn extends AuraReturn
+    public class CmpTemplateReturn
     {
         @AuraEnabled public EmailTemplate et;
         @AuraEnabled public String folder;
     }
 
     @AuraEnabled
-    public static CmpDeleteReturn ctrlDeleteDocument(String deviceInfoStr, List<String> lstDocumentId)
+    public static void ctrlDeleteDocument(List<String> lstDocumentId)
     {
-        CmpDeleteReturn retVal = new CmpDeleteReturn();
         try
         {
             List<ContentDocument>lstDoc = new List<ContentDocument>();
@@ -208,23 +182,19 @@ public with sharing class CmpSendEmailCtrl
                 lstDoc.add(new ContentDocument(Id = docId));
             }
             delete lstDoc;
-            return retVal;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            retVal.handleException(e);
-            Log.notify(e, null, 'CmpSendEmailCtrl', DeviceInformation.deserialize(deviceInfoStr), Log.ErrorType.ERROR);
+            throw new AuraHandledException('Exception occured:\r\n' + ex.getMessage() + '\r\n' + ex.getStackTraceString() + '\r\n');
         }
-        return retVal;
     }
 
     @AuraEnabled
-    public static CmpDeleteReturn ctrlSendEmail(String deviceInfoStr, String templateId, String format,
+    public static void ctrlSendEmail(String templateId, String format,
                                                 String fromId, String to, String relatedTo, String relatedToRecord,
                                                 String additionalTo, String cc, String bcc, Boolean useSignature,
                                                 String subject, String body, String lstUploadFileStr)
     {
-        CmpDeleteReturn retVal = new CmpDeleteReturn();
         try
         {
             system.debug('=======> templateId = ' + templateId);
@@ -312,19 +282,12 @@ public with sharing class CmpSendEmailCtrl
             //system.debug('=======> mail = ' + JSON.serializePretty(mail));
             Messaging.sendEmail(new Messaging.Email[] { mail } , true);
 
-            return retVal;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            retVal.handleException(e);
-            Log.notify(e, null, 'CmpSendEmailCtrl', DeviceInformation.deserialize(deviceInfoStr), Log.ErrorType.ERROR);
+            system.debug('====> Exception occurred:\r\n' + ex.getMessage() + '\r\n' + ex.getStackTraceString() + '\r\n');
+            throw new AuraHandledException('Exception occurred:\r\n' + ex.getMessage() + '\r\n' + ex.getStackTraceString() + '\r\n');
         }
-        return retVal;
-    }
-
-    public Class CmpDeleteReturn extends AuraReturn
-    {
-
     }
 
 }
