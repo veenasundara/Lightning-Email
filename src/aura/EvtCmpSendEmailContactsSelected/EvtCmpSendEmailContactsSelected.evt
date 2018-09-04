@@ -1,0 +1,6 @@
+<!-- Component: 	EvtCmpSendEmailContactsSelected -->
+<!-- Created by: 	OpFocus(Veena Sundara-Heragu) on 08/30/2018 -->
+<!-- Description: 	Send Email contacts selected for CC, BCC or Additional To -->
+<aura:event type="COMPONENT" description="EvtCmpSendEmailContactsSelected">
+
+</aura:event>

@@ -19,6 +19,7 @@
         <members>EvtCmpLookupInitDone</members>
         <members>CmpSendEmail</members>
         <members>CmpSendEmailSelectContact</members>
+        <members>EvtCmpSendEmailContactsSelected</members>
         <name>AuraDefinitionBundle</name>
     </types>
     <version>38.0</version>
