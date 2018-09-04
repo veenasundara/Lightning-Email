@@ -5,7 +5,10 @@
         <members>CmpLookupCtrlTest</members>
         <members>CmpSendEmailCtrl</members>
         <members>CmpSendEmailCtrlTest</members>
+        <members>CmpSendEmailSelectContactCtrl</members>
+        <members>CmpSendEmailSelectContactCtrlTest</members>
         <members>EmailAttachment</members>
+        <members>ListOption</members>
         <name>ApexClass</name>
     </types>
     <types>
@@ -15,6 +18,7 @@
         <members>EvtCmpLookupCleared</members>
         <members>EvtCmpLookupInitDone</members>
         <members>CmpSendEmail</members>
+        <members>CmpSendEmailSelectContact</members>
         <name>AuraDefinitionBundle</name>
     </types>
     <version>38.0</version>
