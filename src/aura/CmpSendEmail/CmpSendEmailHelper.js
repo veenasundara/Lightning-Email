@@ -39,6 +39,25 @@
     {
         try
         {
+            // first reset all fields
+            component.set("v.subject", '');
+            component.set("v.template", {});
+            component.set("v.templateFolder", '');
+            component.set("v.format", null);
+            component.set("v.body", '');
+            component.set("v.from", null);
+            component.set("v.fromId", null);
+            component.set("v.to", null);
+            component.set("v.relatedTo", '--Select--');
+            component.set("v.relatedToRecord", null);
+            component.set("v.additionalTo", '');
+            component.set("v.cc", '');
+            component.set("v.bcc", '');
+            component.find("useSignature").set("v.checked", false);
+            component.set("v.lstAttachFiles", []);
+
+
+
             var pageReference = component.get("v.pageReference");
             //console.log('pageReference = ' + JSON.stringify(pageReference));
             var params = Object.keys(pageReference.state);
@@ -76,7 +95,7 @@
                         component.set("v.bcc", pageReference.state[params[i]]);
                         break;
                     case 'useSignature':
-                        component.set("v.useSignature", pageReference.state[params[i]]);
+                        component.find("useSignature").set("v.checked", pageReference.state[params[i]]);
                         break;
                     case 'subject':
                         component.set("v.subject", pageReference.state[params[i]]);

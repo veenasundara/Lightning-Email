@@ -3,6 +3,10 @@
     {
         helper.hlpDoInit(component);
     },
+    pageReferenceChanged: function (component, event, helper)
+    {
+        helper.hlpProcessParameters(component);
+    },
 
     selectAdditonalTo: function (component, event, helper)
     {

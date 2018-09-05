@@ -13,49 +13,33 @@ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO 
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-.THIS .slds-lookup__menu a {
-    text-decoration: none;
-    font-weight: normal;
-    padding-left: 50px;
-    color: #333;
-}
-
-.THIS .searchIcon {
-    position: absolute;
-    top: 5px;
-    left:5px;
-    z-index: 100;
-}
-
-.THIS .iconPill {
-    position: absolute;
-    left: 30px;
-}
-
 .THIS .lookup {
     position: absolute;
-    top: 0;
+    top: 1.5rem;
     left: 0;
-    z-index: 1;
+    width:100%;
+    min-width: 100%;
+}
+
+.THIS.lookupDropdown .slds-input__icon-group_right .slds-input__icon_right,
+.THIS.lookupDropdown .slds-input__icon-group_right .slds-input__icon--right{
+    right: 1rem;
 }
 
 .THIS .alignButton{
     position: absolute;
-    top: 10px;
-    right: 5px;
+    top: 2rem;
+    right: 0;
     z-index: 10;
 }
 
-.THIS #error-message{
-    margin-top: 45px;
-}
 
-.THIS .slds-lookup__menu {
-    margin-top: 30px;
-}
-
-.THIS.slds-lookup {
-    min-height: 70px;
+.THIS .slds-dropdown {
+    width:100%;
+    max-width:100%;
+    margin-top: -.5rem;
+    overflow: auto;
+    max-height: 300px;
 }
 
 .THIS .slds-input::-ms-clear {
@@ -74,37 +58,6 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     -webkit-appearance: none;
 }
 
-.THIS .slds-has-error {
-    margin-bottom: 20px;
-}
-
 .THIS .slds-form-element__label {
     /*padding-top: 15px;*/
-}
-
-.THIS .help:hover + div{
-    visibility: visible;
-}
-.THIS .slds-popover {
-    display:inline-block !important;
-    visibility: hidden;
-}
-
-.THIS ul > li:hover{
-    background-color: rgb(244, 246, 249);
-}
-.THIS .hlight{
-    background-color: rgb(244, 246, 249);
-}
-.THIS ul > li > span{
-    margin-left: 5px;
-}
-.THIS .move-left{
-    margin-right: 20px;
-}
-.THIS .hide{
-    display: none;
-}
-.THIS .push-down {
-    padding: 2px 0px;
 }

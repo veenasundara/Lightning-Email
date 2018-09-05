@@ -14,32 +14,6 @@
  IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 ({
-    /**
-     * javascript positioning for field help text
-     * @param  {[aura]}  component [description]
-     * @return {[type]}            [void]
-     */
-    hlpSetHelpTextProperties: function(component) {
-        try{
-            var divName = component.getGlobalId() + '_helpDiv';
-            var helpDiv = document.getElementById(divName);
-            if(!helpDiv){
-                return;
-            }
-            var helpButton = helpDiv.getElementsByTagName("button");
-            var leftPos = helpButton[0].offsetLeft - 16;
-            var helpTextBelow = component.get("v.helpTextBelow");
-
-            var toolTipPosition = 'position:absolute;';
-            toolTipPosition += helpTextBelow ? 'top:40px;' : 'bottom:65px;';
-            toolTipPosition += 'left:' + leftPos + 'px;';
-            component.set("v.toolTipPosition", toolTipPosition);
-        }
-        catch(e){
-            this.showError(component, 'hlpSetHelpTextProperties - ' + e.message);
-        }
-
-    },
 
     /**
      * server call to describe field and set sObject Name
@@ -155,6 +129,7 @@
                 // whereClause = whereClause ? '(' + whereClause + ') AND (' + searchWhereClause + ')': searchWhereClause;
                 whereClause = whereClause ?  whereClause + ' AND ' + searchWhereClause : searchWhereClause;
             }
+            // console.log('whereClause = ' + whereClause);
             //
             // if(searchWhereClause && searchWhereClause != ''){
             //     whereClause = whereClause ? '(' + whereClause + ') AND (' + searchWhereClause + ')': searchWhereClause;
@@ -189,33 +164,9 @@
             $A.enqueueAction(action);
         }
         catch(e){
-            this.showError(component, e.message);
+            this.showError(component, 'hlpGetRecords - ' + e.message);
         }
 
-    },
-    /**
-     * validate lookup field
-     * @param  {[aura]} component [description]
-     */
-    hlpCheckValidity : function(component) {
-        try{
-            var myinput = document.getElementById(component.getGlobalId() + "_myinput").value;
-            var required = component.get("v.required");
-            var dropDown = component.find("dropDown");
-            if(required && (!myinput || myinput == '')){
-                //$A.util.addClass(dropDown, 'slds-has-error');
-                component.set("v.errorClass", 'slds-has-error');
-                component.set("v.valid", false);
-            }
-            else{
-                component.set("v.errorClass", '');
-                //$A.util.removeClass(dropDown, 'slds-has-error');
-                component.set("v.valid", true);
-            }
-        }
-        catch(e){
-            this.showError(component, e.message);
-        }
     },
 
     /**
@@ -251,7 +202,7 @@
             }
         }
         catch(e){
-            this.showError(component, e.message);
+            this.showError(component, 'hlpValueChanged - ' + e.message);
         }
     },
 
@@ -264,9 +215,9 @@
             // we need to reset selected value and and name becaues user is typing again, but since
             // selectedName is tied ot the value of teh input, we should save what the user has typed and restore
             // it after we change selectedName
-            var searchString = document.getElementById(component.getGlobalId() + "_myinput").value;
+            var searchString = component.find("myinput").get("v.value");
             this.clearField(component,false);
-            document.getElementById(component.getGlobalId() + "_myinput").value = searchString;
+            component.find("myinput").set("v.value", searchString);
             if(searchString.length < 2){
                 component.set("v.searchWhereClause", '');
                 component.set("v.selectedValue", '');
@@ -282,7 +233,7 @@
             this.hlpGetRecords(component, false);
         }
         catch(e){
-            this.showError(component, e.message);
+            this.showError(component, 'hlpPerformLookup - ' + e.message);
         }
     },
 
@@ -304,11 +255,10 @@
                 this.fireUpdate(component, matchedListRecords[index],matchedListValue[index],matchedListDisplay[index]);
             }
 
-            this.hlpCheckValidity(component);
             this.hideDropDown(component);
         }
         catch(e){
-            this.showError(component, e.message);
+            this.showError(component, 'hlpSelectItem - ' + e.message);
         }
     },
 
@@ -320,7 +270,7 @@
      * @param  {[String]} recordName [Record Label]
      */
     fireUpdate : function(component, record, recordId, recordName){
-        console.log('EVENT: EvtChangeLookup');
+        //console.log('EVENT: EvtChangeLookup');
         var ev = component.getEvent('EvtCmpLookupChanged');
         ev.setParams({
                          'name' : component.get('v.name'),
@@ -336,7 +286,7 @@
      * @param  {[String]} name  [component id]
      */
     fireClear : function(component){
-        console.log('EVENT: EvtClearLookup');
+        //console.log('EVENT: EvtClearLookup');
         var ev = component.getEvent('EvtCmpLookupCleared');
         ev.setParams({
                          'name' : component.get('v.name')
@@ -349,7 +299,7 @@
      * @param  {[String]} name  [component id]
      */
     fireInit : function(component){
-        console.log('EVENT: EvtInitLookup');
+        //console.log('EVENT: EvtInitLookup');
         var ev = component.getEvent('EvtCmpLookupInitDone');
         ev.setParams({
                          'name' : component.get('v.name')
@@ -365,9 +315,9 @@
      */
     populateField : function(component,name){
         try{
-            var f = component.find('inputField')
+            var f = component.find('myInput')
             if(!component.get('v.pills')){
-                document.getElementById(component.getGlobalId() + "_myinput").value = name;
+                component.find("myinput").set("v.value", name);
                 $A.util.removeClass(component.find('removebtn'),'hide');
             }
             else{
@@ -389,7 +339,7 @@
             }
         }
         catch(e){
-            this.showError(component, e.message);
+            this.showError(component, 'populateField - ' + e.message);
         }
     },
 
@@ -401,13 +351,14 @@
         var action = component.get('c.getFieldValue');
         var label = component.get('v.selectedName');
         var val = component.get('v.selectedValue');
+        var obj = component.get('v.sObjectName');
         if(label && val){
             this.populateField(component,label);
             this.fireInit(component);
         }
-        else if (val) {
+        else if (val && obj) {
             action.setParams({
-                                 'obj' : component.get('v.sObjectName'),
+                                 'obj' : obj,
                                  'objId' : val,
                                  'label' : component.get('v.displayedFieldName')
                              });
@@ -483,7 +434,7 @@
             this.toggleIcons(component,true);
         }
         catch(e){
-            this.showError(component, e.message);
+            this.showError(component, 'showDropDown - ' + e.message);
         }
     },
 
@@ -497,7 +448,7 @@
             $A.util.removeClass(dropDown, "slds-is-open");
         }
         catch(e){
-            this.showError(component, e.message);
+            this.showError(component, 'hideDropDown - ' + e.message);
         }
     },
 
@@ -531,13 +482,12 @@
             component.set('v.selectedName',null);
             component.set('v.selectedValue',null);
             component.find('pillsdiv').set('v.body',null);
-            $A.util.removeClass(component.find("inputField"),'hide');
-            $A.util.addClass(component.find('removebtn'),'hide');
+            $A.util.removeClass(component.find("myInput"),'hide');
             if(fireEvent)
                 this.fireClear(component);
         }
         catch(e){
-            this.showError(component, e.message);
+            this.showError(component, 'clearField - ' + e.message);
         }
     },
 
