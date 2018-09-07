@@ -15,6 +15,11 @@
  */
 ({
 
+    hlpDoInit : function (component){
+        this.hlpGetFieldHelp(component);
+        this.hlpGetField(component); // this will call hlpGetRecords to populate list or input
+    },
+
     /**
      * server call to describe field and set sObject Name
      * chains hlpGetRecords and initField
@@ -23,26 +28,27 @@
      */
     hlpGetField : function(component){
         try{
-            var action = component.get('c.getReference');
             var field = component.get('v.sObjectField');
             if(!field){
                 this.hlpGetRecords(component,true);
-                this.initField(component);
                 return;
             }
+
+            this.showSpinner(component);
+            var action = component.get('c.getReference');
             action.setParams({
                                  'field' : field
                              });
 
             action.setCallback(this, function(response){
                 if(!this.handleResponse(component, response)){
+                    this.hideSpinner(component);
                     return;
                 }
                 if($A.util.isEmpty(component.get('v.sObjectName'))){
                     component.set('v.sObjectName',response.getReturnValue());
                 }
                 this.hlpGetRecords(component,true);
-                this.initField(component);
             })
             $A.enqueueAction(action);
         }
@@ -58,22 +64,25 @@
      */
     hlpGetFieldHelp : function(component){
         try{
-            var action = component.get('c.getHelpText');
             var field = component.get('v.sObjectField');
             if(!field){
                 return;
             }
+            this.showSpinner(component);
+            var action = component.get('c.getHelpText');
             action.setParams({
                                  'field' : field
                              });
 
             action.setCallback(this, function(response){
                 if(!this.handleResponse(component, response)){
+                    this.hideSpinner(component);
                     return;
                 }
                 if($A.util.isEmpty(component.get('v.helpText'))){
                     component.set('v.helpText',response.getReturnValue());
                 }
+                this.hideSpinner(component);
 
             })
             $A.enqueueAction(action);
@@ -88,6 +97,15 @@
     hlpGetRecords : function(component, isInit) {
 
         try{
+
+            var selectedValue = component.get("v.selectedValue");
+
+            if(!$A.util.isEmpty(selectedValue) && isInit)
+            {
+                this.initField(component);
+                return;
+            }
+
             var action = component.get("c.getRecords");
             var sObjectName = component.get("v.sObjectName");
             var displayedFieldName = component.get("v.displayedFieldName");
@@ -95,33 +113,11 @@
             var otherFields = component.get("v.otherFields");
             var whereClause = component.get("v.whereClause");
             var searchWhereClause = component.get("v.searchWhereClause");
-            var selectedValue = component.get("v.selectedValue");
-            var selectedName = component.get("v.selectedName");
-
-            // console.log('whereClause = ' + whereClause);
-            // console.log('searchWhereClause = ' + searchWhereClause);
-            // console.log('selectedValue = ' + selectedValue);
-            // console.log('selectedName = ' + selectedName);
 
             if($A.util.isEmpty(sObjectName) || $A.util.isEmpty(displayedFieldName) ||
                 $A.util.isEmpty(valueFieldName))
             {
                 return;
-            }
-
-
-
-            if($A.util.isEmpty(searchWhereClause))
-            {
-
-                if (!$A.util.isEmpty(selectedValue))
-                {
-                    searchWhereClause = valueFieldName + " = '" + selectedValue + "'";
-                }
-                else if (!$A.util.isEmpty(selectedName))
-                {
-                    searchWhereClause = displayedFieldName + " LIKE '%" + selectedName + "%'";
-                }
             }
 
             if(searchWhereClause && searchWhereClause != '')
@@ -130,18 +126,17 @@
                 whereClause = whereClause ?  whereClause + ' AND ' + searchWhereClause : searchWhereClause;
             }
             // console.log('whereClause = ' + whereClause);
-            //
-            // if(searchWhereClause && searchWhereClause != ''){
-            //     whereClause = whereClause ? '(' + whereClause + ') AND (' + searchWhereClause + ')': searchWhereClause;
-            // }
+
             action.setParams({ "sObjectName" : sObjectName ,
                                  "valueFieldName" : valueFieldName,
                                  "otherFields" : otherFields,
                                  "displayedFieldName" : displayedFieldName,
                                  "whereClause" : whereClause});
 
+            this.showSpinner(component);
             action.setCallback(this, function(response){
                 if(!this.handleResponse(component, response)){
+                    this.hideSpinner(component);
                     return;
                 }
                 var resp = response.getReturnValue();
@@ -151,14 +146,10 @@
 
                 this.hlpValueChanged(component); // set the selected name and record if the selectedValue has a value in it
 
-                var selectedValue = component.get('v.selectedValue');
-                if(!resp.lstValue.includes(selectedValue))
-                {
-                    this.clearField(component, false);
-                }
                 if(resp.lstDisplay && resp.lstDisplay.length > 0 && !isInit){
                     this.showDropDown(component,false);
                 }
+                this.hideSpinner(component);
 
             });
             $A.enqueueAction(action);
@@ -170,7 +161,7 @@
     },
 
     /**
-     * value has been changed, set the name
+     * value has been changed, set the name and record
      * @param component
      */
     hlpValueChanged : function(component) {
@@ -315,28 +306,25 @@
      */
     populateField : function(component,name){
         try{
-            var f = component.find('myInput')
-            if(!component.get('v.pills')){
-                component.find("myinput").set("v.value", name);
-                $A.util.removeClass(component.find('removebtn'),'hide');
+            var myinput = component.find('myinput');
+            if(myinput)
+            {
+                myinput.set("v.value", name);
             }
-            else{
-                $A.util.addClass(f,'hide');
-                this.toggleIcons(component,false);
-                var l = name;
-                var a = component.getReference('c.clearField');
-                var i = component.get('v.svg')
-                $A.createComponent('c:CmpPills',
-                                   {
-                                       'label' : l ,
-                                       'onremove' : a,
-                                       'iconName': i
-                                   },
-                                   function(nc){
-                                       component.find('pillsdiv').set('v.body',nc);
-                                   }
-                );
-            }
+        }
+        catch(e){
+            this.showError(component, 'populateField - ' + e.message);
+        }
+    },
+
+    hlpClear: function(component){
+        try{
+            this.populateField(component, '');
+            this.clearField(component, false);
+            component.set("v.matchedListDisplay", []);
+            component.set("v.matchedListValue", []);
+            component.set("v.matchedListRecords", []);
+            component.set("v.searchWhereClause", '');
         }
         catch(e){
             this.showError(component, 'populateField - ' + e.message);
@@ -348,30 +336,44 @@
      * @param  {[aura]} component []
      */
     initField: function(component){
-        var action = component.get('c.getFieldValue');
-        var label = component.get('v.selectedName');
+        var name = component.get('v.selectedName');
         var val = component.get('v.selectedValue');
-        var obj = component.get('v.sObjectName');
-        if(label && val){
+
+        // if both the value and name have been provided, just populatethe input
+        if(val && name){
             this.populateField(component,label);
             this.fireInit(component);
         }
-        else if (val && obj) {
-            action.setParams({
-                                 'obj' : obj,
-                                 'objId' : val,
-                                 'label' : component.get('v.displayedFieldName')
-                             });
-            action.setCallback(this,function(response){
-                if(!this.handleResponse(component, response)){
-                    return;
-                }
-                var res = response.getReturnValue();
-                this.populateField(component,res.lstDisplay[0]);
-                this.fireInit(component);
-            })
+        else if(val) // only value is provided, query for the name
+        {
+            var obj = component.get('v.sObjectName');
+            var displayedFieldName = component.get('v.displayedFieldName');
+            if (obj && displayedFieldName)
+            {
+                var action = component.get('c.getFieldValue');
+                action.setParams({
+                                     'obj': obj,
+                                     'objId': val,
+                                     'label': displayedFieldName
+                                 });
+                this.showSpinner(component);
+                action.setCallback(this, function (response)
+                {
+                    if (!this.handleResponse(component, response))
+                    {
+                        this.hideSpinner(component);
+                        return;
+                    }
+                    var res = response.getReturnValue();
+                    component.set("v.selectedName", res.lstRecords[0]);
+                    component.set("v.selectedRecord", res.lstDisplay[0]);
+                    this.populateField(component, res.lstDisplay[0]);
+                    this.fireInit(component);
+                    this.hideSpinner(component);
+                })
 
-            $A.enqueueAction(action);
+                $A.enqueueAction(action);
+            }
         }
     },
 
@@ -481,8 +483,7 @@
         try{
             component.set('v.selectedName',null);
             component.set('v.selectedValue',null);
-            component.find('pillsdiv').set('v.body',null);
-            $A.util.removeClass(component.find("myInput"),'hide');
+            component.set('v.selectedRecord',null);
             if(fireEvent)
                 this.fireClear(component);
         }
@@ -505,5 +506,14 @@
             $A.util.addClass(component.find('dropdownicon'),'hide');
             $A.util.addClass(component.find('search_icon'),'hide');
         }
-    }
+    },
+    showSpinner : function(component) {
+        var spinner = component.find("mySpinner");
+        $A.util.removeClass(spinner, "slds-hide");
+    },
+
+    hideSpinner : function(component) {
+        var spinner = component.find("mySpinner");
+        $A.util.addClass(spinner, "slds-hide");
+    },
 })

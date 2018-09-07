@@ -11,7 +11,7 @@ public class CmpSendEmailCtrlTest
     {
         Account a = new Account(Name = 'Test Account');
         insert a;
-        Contact c = new Contact(FirstName = 'Test', LastName='Contact', AccountId = a.Id, Email='test@yahoo.com');
+        Contact c = new Contact(FirstName = 'Test', LastName = 'Contact', AccountId = a.Id, Email = 'test@yahoo.com');
         insert c;
 
         EmailTemplate temp = new EmailTemplate();
@@ -32,25 +32,39 @@ public class CmpSendEmailCtrlTest
         CmpSendEmailCtrl.CmpTemplateReturn ret = CmpSendEmailCtrl.ctrlGetEmailTemplate(temp.Id);
         system.assertEquals('My Personl Email Templates', ret.folder);
 
-        ContentVersion cv = new ContentVersion( Title = 'Test',
-                                                PathOnClient = 'Test.jpg',
-                                                VersionData = Blob.valueOf('Test Content Data'),
-                                                IsMajorVersion = true);
+        ContentVersion cv = new ContentVersion(Title = 'Test',
+                PathOnClient = 'Test.jpg',
+                VersionData = Blob.valueOf('Test Content Data'),
+                IsMajorVersion = true);
         insert cv;
         cv = [Select Id, ContentDocumentId From ContentVersion Where Id = :cv.Id];
-        CmpSendEmailCtrl.ctrlDeleteDocument(new List<String>{cv.ContentDocumentId});
+        CmpSendEmailCtrl.ctrlDeleteDocument(new List<String>
+        {
+                cv.ContentDocumentId
+        });
         List<ContentVersion> lstCV = [Select Id from ContentVersion where Id = :cv.Id];
         system.assertEquals(0, lstCV.size());
 
         CmpSendEmailCtrl.ctrlSendEmail(temp.Id, 'text', UserInfo.getUserId(), c.Id, 'Account', a.Id,
-                                        'test@yahoo.com', 'test@yahoo.com', 'test@yahoo.com', false,
-                                        'subject', 'body',
-                                        JSON.serialize(new List<EmailAttachment>{new EmailAttachment('testdoc', cv.ContentDocumentId)}));
+                'test@yahoo.com', 'test@yahoo.com', 'test@yahoo.com', false,
+                'subject', 'body',
+                JSON.serialize(new List<EmailAttachment>
+                {
+                        new EmailAttachment('testdoc', cv.ContentDocumentId)
+                }));
 
         CmpSendEmailCtrl.ctrlSendEmail(null, 'text', UserInfo.getUserId(), c.Id, 'Account', a.Id,
-                                        'test@yahoo.com', 'test@yahoo.com', 'test@yahoo.com', false,
-                                        'subject', 'body',
-                                        JSON.serialize(new List<EmailAttachment>{new EmailAttachment('testdoc', cv.ContentDocumentId)}));
+                'test@yahoo.com', 'test@yahoo.com', 'test@yahoo.com', false,
+                'subject', 'body',
+                JSON.serialize(new List<EmailAttachment>
+                {
+                        new EmailAttachment('testdoc', cv.ContentDocumentId)
+                }));
+
+        String fldName = CmpSendEmailCtrl.ctrlGetNameField('Case');
+        system.assertEquals('CaseNumber', fldName);
+        fldName = CmpSendEmailCtrl.ctrlGetNameField('Account');
+        system.assertEquals('Name', fldName);
     }
 
 }

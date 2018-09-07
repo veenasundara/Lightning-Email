@@ -7,7 +7,10 @@
     {
         helper.hlpProcessParameters(component);
     },
-
+    relatedToChanged: function (component, event, helper)
+    {
+        helper.hlpRelatedToChanged(component);
+    },
     selectAdditonalTo: function (component, event, helper)
     {
         helper.hlpSelectAdditionalTo(component);

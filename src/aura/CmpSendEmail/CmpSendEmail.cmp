@@ -17,6 +17,7 @@
     <aura:attribute name="relatedTo" type="String"/>
     <aura:attribute name="relatedToRecord" type="String"/>
     <aura:attribute name="relatedToRecordError" type="Boolean" default="false"/>
+    <aura:attribute name="relatedToDisplayField" type="String"/>
 
     <aura:attribute name="lstFrom" type="Object[]" />
     <aura:attribute name="fromId" type="String"/>
@@ -51,6 +52,7 @@
     <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
     <aura:handler name="EvtCmpSendEmailContactsSelected" event="c:EvtCmpSendEmailContactsSelected" action="{!c.saveContact}"/>
     <aura:handler name="change" value="{!v.pageReference}" action="{!c.pageReferenceChanged}" />
+    <aura:handler name="change" value="{!v.relatedTo}" action="{!c.relatedToChanged}" />
 
     <lightning:card title="Send Email">
         <aura:set attribute="actions">
@@ -101,7 +103,8 @@
 
             <!-- To -->
             <lightning:layoutItem size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="4" padding="around-small">
-                <c:CmpLookup sObjectName="Contact"
+                <c:CmpLookup   aura:id="toLookup"
+                               sObjectName="Contact"
                                displayedFieldName="Name"
                                valueFieldName="Id"
                                label="To"
@@ -119,8 +122,9 @@
                         </aura:iteration>
                     </lightning:select>
 
-                    <c:CmpLookup sObjectName="{!v.relatedTo &amp;&amp; v.relatedTo != '--Select--' ? v.relatedTo : ''}"
-                                   displayedFieldName="Name"
+                    <c:CmpLookup   aura:id="relatedToRecordLookup"
+                                   sObjectName="{!v.relatedTo &amp;&amp; v.relatedTo != '--Select--' ? v.relatedTo : ''}"
+                                   displayedFieldName="{!v.relatedToDisplayField}"
                                    valueFieldName="Id"
                                    label="{!v.relatedTo &amp;&amp; v.relatedTo != '--Select--' ? 'Select ' + v.relatedTo : ''}"
                                    selectedValue="{!v.relatedToRecord}"

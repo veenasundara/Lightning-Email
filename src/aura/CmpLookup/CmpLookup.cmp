@@ -33,6 +33,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     <aura:attribute name="svg" type="String" access="public" description="icon name"/>
     <aura:attribute name="showHelp" type="Boolean" access="public" default="false" description="Whether to show field help box"/>
     <aura:attribute name="helpText" type="String" access="public" description="Help text for field"/>
+
     <aura:attribute name="selectedValue" type="String" access="public" required="false" description="value of 'valueFieldName' for the selected item"/>
     <aura:attribute name="selectedName" type="String" access="public" required="false" description="value of 'displayedFieldName' for the selected item"/>
     <aura:attribute name="selectedRecord" type="Object" access="public" required="false" description="SObject record for the selected item"/>
@@ -46,15 +47,14 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     <aura:registerEvent name="EvtCmpLookupCleared" type="c:EvtCmpLookupCleared"/>
     <aura:registerEvent name="EvtCmpLookupInitDone" type="c:EvtCmpLookupInitDone"/>
 
-    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
-    <aura:handler name="change" value="{!v.whereClause}" action="{!c.doInit}" />
-    <aura:handler name="change" value="{!v.sObjectName}" action="{!c.doInit}" />
+    <aura:method name="populate" action="{!c.doInit}" />
+    <aura:method name="clear" action="{!c.clear}" />
     <aura:handler name="change" value="{!v.checkValidity}" action="{!c.checkValidity}" />
-    <aura:handler name="change" value="{!v.selectedValue}" action="{!c.valueChanged}" />
 
 
     <div aura:id="dropDown" class="slds-dropdown-trigger slds-dropdown-trigger--click lookupDropdown"
          style="width:100%;min-height:60px;">
+        <lightning:spinner aura:id="mySpinner" variant="brand" size="large" alternativeText="waiting"/>
         <div class="slds-form-element">
             <!-- Label and help text -->
             <aura:if isTrue="{!v.label}">
@@ -70,7 +70,6 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                                  name="search" required="{!v.required}" disabled="{!v.disabled}"
                                  class="lookup" onchange="{!c.performLookup}"
                                  onclick="{!c.toggleMenu }" variant="label-hidden"/>
-                <div aura:id="pillsdiv"/>
                 <aura:if isTrue="{!!v.disabled}">
                     <lightning:buttonicon variant="bare" iconName="utility:switch" class="alignButton"
                                           onclick="{!c.toggleMenu }" alternativeText="toggle show"/>

@@ -48,8 +48,10 @@
             component.set("v.from", null);
             component.set("v.fromId", null);
             component.set("v.to", null);
+            component.find("toLookup").clear();
             component.set("v.relatedTo", '--Select--');
             component.set("v.relatedToRecord", null);
+            component.find("relatedToRecordLookup").clear();
             component.set("v.additionalTo", '');
             component.set("v.cc", '');
             component.set("v.bcc", '');
@@ -110,11 +112,48 @@
                         break;
                 }
             }
+            component.find("toLookup").populate();
+
             this.hideSpinner(component);
         }
         catch (e)
         {
             this.showError(component,'hlpSelectAdditionalTo - ' + e.message);
+        }
+    },
+
+    hlpRelatedToChanged: function (component)
+    {
+        try
+        {
+            component.find("relatedToRecordLookup").clear();
+            var relatedTo = component.get("v.relatedTo");
+            if(!$A.util.isEmpty(relatedTo) && relatedTo != '--Select--')
+            {
+                this.showSpinner(component);
+                var action = component.get('c.ctrlGetNameField');
+                action.setParams({"objName" : relatedTo});
+
+                action.setCallback(this, function (response)
+                {
+                    if (!this.handleResponse(component, response))
+                    {
+                        this.hideSpinner(component);
+                        return;
+                    }
+
+                    var resp = response.getReturnValue();
+                    component.set("v.relatedToDisplayField", resp);
+                    component.find("relatedToRecordLookup").populate();
+                    this.hideSpinner(component);
+                });
+
+                $A.enqueueAction(action);
+            }
+        }
+        catch (e)
+        {
+            this.showError(component,'hlpRelatedToChanged - ' + e.message);
         }
     },
 
@@ -530,6 +569,7 @@
             console.log('fromId = ' + fromId);
             console.log('fromId = ' + component.get("v.fromId"));
             var to = component.get("v.to");
+            console.log('to = ' + to);
             var relatedTo = component.find("relatedTo").get("v.value");
             var relatedToRecord = component.get("v.relatedToRecord");
             console.log('relatedToRecord = ' + relatedToRecord);

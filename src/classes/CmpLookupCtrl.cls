@@ -107,8 +107,8 @@ public with sharing class CmpLookupCtrl
      */
     @AuraEnabled
     public static LookupRecords getFieldValue(String obj, String objId, String label){
+        String q = 'Select Id, ' + label + ' from ' + obj + ' where Id = \'' + objId + '\'';
         try{
-            String q = 'Select Id, ' + label + ' from ' + obj + ' where Id = \'' + objId + '\'';
             LookupRecords retVal = new LookupRecords();
             for(SObject so :Database.query(q)){
                 retVal.add(so,(String)so.get('Id'),(String)so.get(label));
@@ -116,7 +116,8 @@ public with sharing class CmpLookupCtrl
             return retVal;
         }
         catch(Exception ex){
-            throw new AuraHandledException('Exception occured:\r\n' + ex.getMessage() + '\r\n' + ex.getStackTraceString() + '\r\n');
+            throw new AuraHandledException('Exception occurred:\r\n' + ex.getMessage() + '\r\n' + ex.getStackTraceString() + '\r\n' +
+                                            ', q = ' + q);
         }
     }
 

@@ -28,8 +28,8 @@ public with sharing class CmpSendEmailCtrl
             for(Schema.SObjectType objType: gd.values())
             {
                 Schema.DescribeSObjectResult ds = objType.getDescribe();
-                if(ds.fields.getMap().get('Name') != null)
-                {
+//                if(ds.fields.getMap().get('Name') != null)
+//                {
                     String label = ds.getLabel();
                     ListOption lo = new ListOption(ds.getLabel(), ds.getName());
                     if(mapListOptionByObjectLabel.containsKey(label))
@@ -41,7 +41,7 @@ public with sharing class CmpSendEmailCtrl
                         mapListOptionByObjectLabel.put(ds.getLabel(), new List<ListOption>{lo});
                         lstObjectLabel.add(label);
                     }
-                }
+//                }
             }
             lstObjectLabel.sort();
             for(String label : lstObjectLabel)
@@ -216,19 +216,19 @@ public with sharing class CmpSendEmailCtrl
             Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
             mail.setTargetObjectId(to);
 
-            if(additionalTo != null)
+            if(additionalTo != null && additionalTo.trim() != '')
             {
                 List<String> lstTo = additionalTo.split(';');
                 mail.setToAddresses(lstTo);
             }
 
-            if(cc != null)
+            if(cc != null && cc.trim() != '')
             {
                 List<String> lstCC = cc.split(';');
                 mail.setCcAddresses(lstCC);
             }
 
-            if(bcc != null)
+            if(bcc != null && bcc.trim() != '')
             {
                 List<String> lstBCC = bcc.split(';');
                 mail.setBCCAddresses(lstBCC);
@@ -282,6 +282,63 @@ public with sharing class CmpSendEmailCtrl
             //system.debug('=======> mail = ' + JSON.serializePretty(mail));
             Messaging.sendEmail(new Messaging.Email[] { mail } , true);
 
+        }
+        catch (Exception ex)
+        {
+            system.debug('====> Exception occurred:\r\n' + ex.getMessage() + '\r\n' + ex.getStackTraceString() + '\r\n');
+            throw new AuraHandledException('Exception occurred:\r\n' + ex.getMessage() + '\r\n' + ex.getStackTraceString() + '\r\n');
+        }
+    }
+
+    @AuraEnabled
+    public static String ctrlGetNameField(String objName)
+    {
+        try
+        {
+            Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
+            Schema.SObjectType objType = gd.get(objName);
+            String strResult = null;
+            //Schema.sObjectType objType = obj.getSObjectType();
+            Schema.DescribeSObjectResult ObjResult =  objType.getDescribe();
+            Map<String, Schema.SObjectField> mapFields = ObjResult.Fields.getMap();
+            Map<String, Schema.DescribeFieldResult> mapDFR = new Map<String, Schema.DescribeFieldResult>();
+            for(String fldName : mapFields.keySet())
+            {
+                Schema.SObjectField objField = mapFields.get(fldName);
+                Schema.DescribeFieldResult dfr = objField.getDescribe();
+                mapDFR.put(fldName, dfr);
+
+                if(dfr.isNameField())
+                {
+                    strResult = dfr.getName();
+                    break;
+                }
+            }
+
+            if(strResult != null)
+                return strResult;
+
+            for(Schema.DescribeFieldResult dfr : mapDFR.values())
+            {
+                if(dfr.isAutoNumber())
+                {
+                    strResult = dfr.getName();
+                    break;
+                }
+            }
+
+            if(strResult != null)
+                return strResult;
+
+            for(Schema.DescribeFieldResult dfr : mapDFR.values())
+            {
+                if(dfr.isUnique())
+                {
+                    strResult = dfr.getName();
+                    break;
+                }
+            }
+            return strResult;
         }
         catch (Exception ex)
         {

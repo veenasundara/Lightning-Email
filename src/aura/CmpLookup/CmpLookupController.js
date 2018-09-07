@@ -18,15 +18,8 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         helper.hlpGetFieldHelp(component);
         helper.hlpGetField(component);
     },
-    valueChanged : function(component, event, helper) {
-        var myinput = component.find("myinput");
-        if(myinput)
-        {
-            myinput.set("v.value", '');
-        }
-        component.set("v.selectedName", '');
-        component.set("v.selectedRecord", {});
-        helper.hlpGetField(component);
+    clear : function(component, event, helper) {
+        helper.hlpClear(component);
     },
     performLookup : function(component, event, helper) {
         helper.hlpPerformLookup(component);
